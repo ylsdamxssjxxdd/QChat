@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/permission.png</file>
+        <file>icons/user.png</file>
+        <file>icons/settings.png</file>
+        <file>qss/EVA_default.qss</file>
+    </qresource>
+</RCC>
