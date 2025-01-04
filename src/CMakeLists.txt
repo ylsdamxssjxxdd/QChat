@@ -27,15 +27,6 @@ find_package(Qt5 COMPONENTS
     Gui
     REQUIRED)
 
-# Add include directories
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${Qt5Core_INCLUDE_DIRS}
-    ${Qt5Network_INCLUDE_DIRS}
-    ${Qt5Widgets_INCLUDE_DIRS}
-    ${Qt5Concurrent_INCLUDE_DIRS}
-)
-
 # Link Qt libraries
 target_link_libraries(${TARGET} PRIVATE 
     Qt5::Core 
@@ -53,3 +44,15 @@ if(MSVC)
         COMMENT "Running windeployqt..."
     )
 endif()
+
+
+# 测试
+add_executable(lan_test
+lan/lan_test.cpp
+lan/lan.cpp
+lan/lan.h
+)
+target_link_libraries(lan_test PRIVATE 
+    Qt5::Core 
+    Qt5::Network 
+)
