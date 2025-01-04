@@ -7,6 +7,7 @@
 #include <QSet>
 #include <QTimer>
 #include <QNetworkInterface>
+#include <QThreadPool>
 
 class LAN : public QObject
 {
@@ -29,6 +30,7 @@ public:
     void addNetworkSegmentForDiscovery(const QString& baseAddress);
 
     void startDiscoveryForAllSegments();
+
     
 private slots:
     // 处理传入的数据报

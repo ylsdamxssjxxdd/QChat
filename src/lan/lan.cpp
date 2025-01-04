@@ -2,6 +2,8 @@
 #include <QNetworkDatagram>
 #include <QDebug>
 #include <QNetworkInterface>
+#include <QThreadPool>
+#include <QRunnable>
 
 LAN::LAN(QObject* parent)
     : QObject(parent), udpSocket(new QUdpSocket(this)), broadcastPort(45454)
@@ -37,12 +39,14 @@ void LAN::startBroadcasting()
 void LAN::startDiscovery(const QString& baseAddress)
 {
     qDebug() << "Starting discovery for segment:" << baseAddress;
-    for (int i = 1; i <= 255; ++i)
-    {
-        QString targetAddress = baseAddress + QString::number(i);
-        udpSocket->writeDatagram("Discovery", QHostAddress(targetAddress), broadcastPort);
-        // qDebug() << "Sending discovery to" << targetAddress;
-    }
+    
+    // 使用线程池进行并行化发现
+    QThreadPool::globalInstance()->start([this, baseAddress]() {
+        for (int i = 1; i <= 255; ++i) {
+            QString targetAddress = baseAddress + QString::number(i);
+            udpSocket->writeDatagram("Discovery", QHostAddress(targetAddress), broadcastPort);
+        }
+    });
 }
 
 QSet<QHostAddress> LAN::getDiscoveredLANs() const
@@ -62,14 +66,12 @@ void LAN::addNetworkSegmentForDiscovery(const QString& baseAddress)
 
 void LAN::processPendingDatagrams()
 {
-    while (udpSocket->hasPendingDatagrams())
-    {
+    while (udpSocket->hasPendingDatagrams()) {
         QNetworkDatagram datagram = udpSocket->receiveDatagram();
         QHostAddress senderAddress = datagram.senderAddress();
 
-        if (datagram.data() == "LAN-Device")
-        {
-        // 如果消息是"LAN-Device"消息，存储发送者地址
+        // 使用set进行去重，避免重复存储已发现设备
+        if (datagram.data() == "LAN-Device" && !discoveredLANs.contains(senderAddress)) {
             discoveredLANs.insert(senderAddress);
             qDebug() << "Discovered LAN device at" << senderAddress.toString();
         }
@@ -78,34 +80,30 @@ void LAN::processPendingDatagrams()
 
 void LAN::broadcastIdentity()
 {
-    QByteArray broadcastMessage = "LAN-Device"; // 消息内容可以自定义
+    QByteArray broadcastMessage = "LAN-Device"; // 简化消息内容
     udpSocket->writeDatagram(broadcastMessage, QHostAddress::Broadcast, broadcastPort);
     qDebug() << "Broadcasting identity";
 }
 
-QStringList LAN::getLocalNetworkSegments() const {
+QStringList LAN::getLocalNetworkSegments() const
+{
     QStringList segments;
     // 获取机器的所有网络接口
     QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
     
-    for (const QNetworkInterface &interface : interfaces) {
+    for (const QNetworkInterface& interface : interfaces) {
         QList<QNetworkAddressEntry> entries = interface.addressEntries();
         
-        for (const QNetworkAddressEntry &entry : entries) {
+        for (const QNetworkAddressEntry& entry : entries) {
             // 仅考虑IPv4地址
             if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
                 QString ip = entry.ip().toString();
 
-                // 过滤回环地址
-                if (entry.ip().isLoopback()) {
-                    continue; // 跳过回环地址
+                // 过滤回环地址（127.0.0.1）和APIPA地址（169.254.x.x）
+                if (entry.ip().isLoopback() || ip.startsWith("169.254")) {
+                    continue;
                 }
-                
-                // 过滤 APIPA 地址 (169.254.x.x)
-                if (entry.ip().toString().startsWith("169.254")) {
-                    continue; // 跳过 APIPA 地址
-                }
-           
+
                 // 获取网段
                 QString networkSegment = ip.left(ip.lastIndexOf('.') + 1);
                 qDebug() << "Local ip:" << networkSegment;
@@ -118,8 +116,7 @@ QStringList LAN::getLocalNetworkSegments() const {
 
 void LAN::startDiscoveryForAllSegments()
 {
-    for (const QString& segment : networkSegments)
-    {
+    for (const QString& segment : networkSegments) {
         startDiscovery(segment);
     }
 }
