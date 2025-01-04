@@ -75,7 +75,7 @@
          <string>增殖</string>
         </property>
         <property name="icon">
-         <iconset resource="../resources/res.qrc">
+         <iconset resource="../../resources/res.qrc">
           <normaloff>:/icons/user.png</normaloff>:/icons/user.png</iconset>
         </property>
         <property name="iconSize">
@@ -110,7 +110,7 @@
          <string>对话</string>
         </property>
         <property name="icon">
-         <iconset resource="../resources/res.qrc">
+         <iconset resource="../../resources/res.qrc">
           <normaloff>:/icons/permission.png</normaloff>:/icons/permission.png</iconset>
         </property>
         <property name="iconSize">
@@ -145,7 +145,7 @@
          <string>设置</string>
         </property>
         <property name="icon">
-         <iconset resource="../resources/res.qrc">
+         <iconset resource="../../resources/res.qrc">
           <normaloff>:/icons/settings.png</normaloff>:/icons/settings.png</iconset>
         </property>
         <property name="iconSize">
@@ -180,7 +180,7 @@
          <string>好友</string>
         </property>
         <property name="icon">
-         <iconset resource="../resources/res.qrc">
+         <iconset resource="../../resources/res.qrc">
           <normaloff>:/icons/user.png</normaloff>:/icons/user.png</iconset>
         </property>
         <property name="iconSize">
@@ -213,7 +213,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/res.qrc"/>
+  <include location="../../resources/res.qrc"/>
  </resources>
  <connections/>
 </ui>

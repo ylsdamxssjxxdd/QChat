@@ -15,6 +15,7 @@ public:
     explicit FriendWindow(QWidget *parent = nullptr);
     ~FriendWindow();
 
+
 private:
     Ui::FriendWindow *ui;
 };
